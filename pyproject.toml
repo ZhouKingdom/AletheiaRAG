@@ -1,0 +1,71 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "aletheia-rag"
+version = "0.1.0"
+description = "AletheiaRAG - Agentic RAG with Self-Reflection & Fine-Tuned Models"
+authors = []
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langgraph = ">=0.2"
+langchain = ">=0.3"
+langchain-openai = ">=0.2"
+langchain-community = ">=0.3"
+langsmith = ">=0.1"
+openai = ">=1.0"
+pydantic = ">=2.7"
+fastapi = ">=0.115"
+uvicorn = {extras = ["standard"], version = ">=0.30"}
+httpx = ">=0.27"
+structlog = ">=24.0"
+rank-bm25 = ">=0.2"
+sentence-transformers = ">=3.0"
+sqlalchemy = ">=2.0"
+psycopg2-binary = ">=2.9"
+tiktoken = ">=0.7"
+tenacity = ">=8.2"
+prometheus-client = ">=0.17"
+# Optional heavy ML deps — install with: pip install -e ".[finetune]"
+peft = {version = ">=0.9.0", optional = true}
+trl = {version = ">=0.8.0", optional = true}
+bitsandbytes = {version = ">=0.42.0", optional = true}
+accelerate = {version = ">=0.27.0", optional = true}
+# Optional PII deps — install with: pip install -e ".[pii]"
+# then: python -m spacy download en_core_web_lg
+presidio-analyzer = {version = ">=2.2.0", optional = true}
+presidio-anonymizer = {version = ">=2.2.0", optional = true}
+spacy = {version = ">=3.0.0", optional = true}
+# Optional ANN index — install with: pip install -e ".[semantic]"
+faiss-cpu = {version = ">=1.7.0", optional = true}
+# Optional observability — install with: pip install -e ".[observability]"
+opentelemetry-sdk = {version = ">=1.20", optional = true}
+opentelemetry-exporter-otlp-proto-grpc = {version = ">=1.20", optional = true}
+
+[tool.poetry.extras]
+finetune = ["sentence-transformers", "peft", "trl", "bitsandbytes", "accelerate"]
+pii = ["presidio-analyzer", "presidio-anonymizer", "spacy"]
+semantic = ["faiss-cpu"]
+observability = ["opentelemetry-sdk", "opentelemetry-exporter-otlp-proto-grpc"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+pytest-asyncio = ">=0.23"
+ruff = ">=0.4"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: pip install --no-cache-dir poetry==1.8.5
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-root --no-interaction --no-ansi
+
+      - name: Lint
+        run: poetry run ruff check src/ tests/ scripts/
+        continue-on-error: true
+
+      - name: Run unit tests
+        env:
+          OPENAI_API_KEY: sk-test-placeholder
+        run: poetry run pytest tests/unit/ -v --tb=short
+
+  eval:
+    name: Retrieval Benchmark
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install --no-cache-dir poetry==1.8.5
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-root --no-interaction --no-ansi
+
+      - name: Run retrieval benchmark
+        run: PYTHONPATH=. poetry run python scripts/benchmark_retrieval.py
+        continue-on-error: true
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: eval_results/
